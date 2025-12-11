@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRPD 第三課 無障礙</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .post-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .day-header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .detective-badge {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .badge-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .score-display {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        /* 照片判斷遊戲 */
+        .photo-game {
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid #43e97b;
+        }
+        
+        .game-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .photo-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            color: #333;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .photo-description {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 4px solid #43e97b;
+        }
+        
+        .problem-list {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .problem-item {
+            padding: 8px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #ffe69c;
+        }
+        
+        .problem-item:last-child {
+            border-bottom: none;
+        }
+        
+        .problem-item:hover {
+            padding-left: 10px;
+            color: #856404;
+        }
+        
+        .problem-checkbox {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffc107;
+            border-radius: 4px;
+            margin-right: 10px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+        }
+        
+        .problem-item.selected .problem-checkbox {
+            background: #43e97b;
+            border-color: #43e97b;
+        }
+        
+        .problem-item.selected .problem-checkbox::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            line-height: 16px;
+        }
+        
+        .problem-item.correct {
+            background: rgba(67, 233, 123, 0.3);
+            animation: correctShake 0.5s;
+        }
+        
+        .problem-item.incorrect {
+            background: rgba(255, 107, 107, 0.3);
+            animation: incorrectShake 0.5s;
+        }
+        
+        @keyframes correctShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            color: white;
+        }
+        
+        .feedback.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+        
+        .feedback.success {
+            background: rgba(67, 233, 123, 0.5);
+            border-left: 4px solid #43e97b;
+        }
+        
+        .feedback.partial {
+            background: rgba(255, 193, 7, 0.5);
+            border-left: 4px solid #ffc107;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 情境選擇遊戲 */
+        .scenario-game {
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid #38f9d7;
+        }
+        
+        .scenario-card {
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .scenario-question {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .choice-btn {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .choice-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .choice-btn.selected {
+            background: #38f9d7;
+            border-color: #38f9d7;
+            color: white;
+        }
+        
+        .choice-btn.correct {
+            background: #43e97b;
+            border-color: #43e97b;
+            color: white;
+            animation: pulse 0.6s;
+        }
+        
+        .choice-btn.incorrect {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+            color: white;
+            animation: shake 0.6s;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #43e97b;
+            display: none;
+            color: #2e7d32;
+        }
+        
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .completion-section {
+            text-align: center;
+            margin: 25px 0;
+            padding: 25px;
+            background: rgba(67, 233, 123, 0.2);
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .completion-section.show {
+            display: block;
+            animation: celebrate 1s;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.05) rotate(-2deg); }
+            75% { transform: scale(1.05) rotate(2deg); }
+        }
+        
+        .share-section {
+            margin-top: 25px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .share-btn {
+            background: linear-gradient(45deg, #43e97b, #38f9d7);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: transform 0.3s ease;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .final-message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="post-container">
+        <div class="day-header">
+            🌐 Day 4: 無障礙偵探
+        </div>
+        
+        <div class="detective-badge">
+            <div class="badge-icon">🔍</div>
+            <div class="score-display">
+                偵探分數：<span id="totalScore">0</span>/100
+            </div>
+            <div style="font-size: 14px; margin-top: 10px;">
+                找出環境中的障礙，成為無障礙專家！
+            </div>
+        </div>
+        
+        <!-- 照片判斷遊戲 1 -->
+        <div class="photo-game">
+            <div class="game-title">📸 情境一：捷運站出口</div>
+            <div class="photo-container">
+                <div class="photo-description">
+                    <strong>場景描述：</strong><br>
+                    這是一個捷運站的出口。出口處有三個選擇：左邊是電扶梯（向上），中間是樓梯，右邊是一個小小的標示寫著「電梯在100公尺外的另一個出口」。
+                    <br><br>
+                    現在是上班尖峰時間，人潮洶湧，大部分人都走樓梯或搭電扶梯。
+                </div>
+                
+                <strong style="color: #856404;">❓ 請選出這個場景的所有問題：</strong>
+                <div class="problem-list" id="problem-list-1">
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        電梯位置不明顯且距離太遠
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, false)">
+                        <span class="problem-checkbox"></span>
+                        電扶梯只有向上的
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        缺少清楚的無障礙路線指引
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, false)">
+                        <span class="problem-checkbox"></span>
+                        上班時間人太多
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="checkAnswers(1)">提交答案</button>
+                
+                <div class="feedback" id="feedback-1"></div>
+            </div>
+        </div>
+        
+        <!-- 照片判斷遊戲 2 -->
+        <div class="photo-game">
+            <div class="game-title">📸 情境二：餐廳用餐</div>
+            <div class="photo-container">
+                <div class="photo-description">
+                    <strong>場景描述：</strong><br>
+                    一間新開的網紅餐廳。入口有一個15公分的門檻，室內座位之間的走道約60公分寬。菜單使用花俏的藝術字體，字級很小。廁所在二樓，只能走樓梯上去。
+                    <br><br>
+                    餐廳裝潢很漂亮，採光良好，服務生態度親切。
+                </div>
+                
+                <strong style="color: #856404;">❓ 請選出這個場景的所有問題：</strong>
+                <div class="problem-list" id="problem-list-2">
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        入口有門檻，輪椅難以進入
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        走道太窄，輪椅無法通行
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        菜單字體小又花俏，不易閱讀
+                    </div>
+                    <div class="problem-item" onclick="toggleProblem(this, true)">
+                        <span class="problem-checkbox"></span>
+                        廁所在二樓且無電梯
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="checkAnswers(2)">提交答案</button>
+                
+                <div class="feedback" id="feedback-2"></div>
+            </div>
+        </div>
+        
+        <!-- 情境選擇遊戲 -->
+        <div class="scenario-game">
+            <div class="game-title">🎯 快問快答：最佳改善方案</div>
+            
+            <div class="scenario-card">
+                <div class="scenario-question">
+                    ❓ 公園的遊樂設施都是傳統的溜滑梯、鞦韆，身心障礙兒童無法使用。最好的改善方式是？
+                </div>
+                <div class="choice-grid">
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 0)">
+                        設置專用的身障遊戲區
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, true, 3, 0)">
+                        採用共融式遊具設計
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 0)">
+                        禁止身障兒童進入
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 0)">
+                        增加告示牌說明
+                    </div>
+                </div>
+                <div class="explanation" id="explanation-0">
+                    <strong>💡 正解！</strong><br>
+                    共融式遊具讓所有兒童都能一起玩耍，而不是隔離。例如：輪椅可上的溜滑梯、有靠背的鞦韆等。這才是真正的「無障礙」！
+                </div>
+            </div>
+            
+            <div class="scenario-card">
+                <div class="scenario-question">
+                    ❓ 網站上的重要公告只有圖片形式，沒有文字說明。這會造成什麼問題？
+                </div>
+                <div class="choice-grid">
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 1)">
+                        圖片比較美觀沒問題
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, true, 3, 1)">
+                        視障者無法用報讀軟體閱讀
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 1)">
+                        載入速度會比較慢
+                    </div>
+                    <div class="choice-btn" onclick="selectChoice(this, false, 3, 1)">
+                        手機版會跑版
+                    </div>
+                </div>
+                <div class="explanation" id="explanation-1">
+                    <strong>💡 完全正確！</strong><br>
+                    視障者使用螢幕報讀軟體，只能讀取文字內容。圖片必須加上「替代文字」(alt text)，才能讓每個人都能獲得資訊！
+                </div>
+            </div>
+        </div>
+        
+        <div class="completion-section" id="completion">
+            <div style="font-size: 64px; margin-bottom: 15px;">🏆</div>
+            <h3>太厲害了！你已經是無障礙專家！</h3>
+            <div style="margin-top: 15px; font-size: 14px;">
+                <p>🎯 你已經掌握：</p>
+                <p>✓ 識別環境中的各種障礙<br>
+                ✓ 理解共融設計的重要性<br>
+                ✓ 知道如何提出改善方案<br>
+                ✓ 認識資訊無障礙的必要性</p>
+            </div>
+        </div>
+        
+        <div class="share-section">
+            <div style="margin-bottom: 15px;">🌐 分享你的無障礙覺察：</div>
+            <button class="share-btn" onclick="shareResult()">
+                📱 分享成果
+            </button>
+            <button class="share-btn" onclick="pledgeAction()">
+                🤝 我的行動承諾
+            </button>
+        </div>
+        
+        <div class="final-message">
+            <strong>🎉 CRPD 三關卡挑戰完成！</strong><br><br>
+            你已經了解CRPD三個核心精神：<br>
+            🚫 不歧視<br>
+            ⚖️ 機會均等<br>
+            🌐 無障礙<br><br>
+            <small>現在就從身邊開始，打造更友善的環境吧！</small>
+        </div>
+    </div>
+
+    <script>
+        let totalScore = 0;
+        let game1Answered = false;
+        let game2Answered = false;
+        let game3Answered = [false, false];
+        
+        const game1Selections = [];
+        const game2Selections = [];
+        
+        function toggleProblem(element, isCorrect) {
+            const gameId = element.closest('.photo-game').querySelector('.game-title').textContent.includes('情境一') ? 1 : 2;
+            const answered = gameId === 1 ? game1Answered : game2Answered;
+            
+            if (answered) return;
+            
+            element.classList.toggle('selected');
+        }
+        
+        function checkAnswers(gameId) {
+            if (gameId === 1 && game1Answered) return;
+            if (gameId === 2 && game2Answered) return;
+            
+            const problemList = document.getElementById(`problem-list-${gameId}`);
+            const items = problemList.querySelectorAll('.problem-item');
+            const feedback = document.getElementById(`feedback-${gameId}`);
+            const submitBtn = problemList.closest('.photo-container').querySelector('.submit-btn');
+            
+            let correctCount = 0;
+            let totalCorrect = 0;
+            let mistakes = 0;
+            
+            items.forEach(item => {
+                const isCorrect = item.onclick.toString().includes('true');
+                const isSelected = item.classList.contains('selected');
+                
+                if (isCorrect) totalCorrect++;
+                
+                item.style.pointerEvents = 'none';
+                
+                if (isSelected && isCorrect) {
+                    item.classList.add('correct');
+                    correctCount++;
+                } else if (isSelected && !isCorrect) {
+                    item.classList.add('incorrect');
+                    mistakes++;
+                } else if (!isSelected && isCorrect) {
+                    item.classList.add('correct');
+                    setTimeout(() => {
+                        item.querySelector('.problem-checkbox').style.background = '#ffc107';
+                        item.querySelector('.problem-checkbox').style.borderColor = '#ffc107';
+                    }, 300);
+                }
+            });
+            
+            submitBtn.disabled = true;
+            submitBtn.style.background = '#ccc';
+            
+            let score = 0;
+            let message = '';
+            
+            if (correctCount === totalCorrect && mistakes === 0) {
+                score = 25;
+                message = `<strong>🎉 完美！</strong><br>你找出了所有 ${totalCorrect} 個問題，而且沒有誤判！<br>獲得 +${score} 分`;
+                feedback.classList.add('success');
+            } else if (correctCount > 0) {
+                score = Math.round((correctCount / totalCorrect) * 25 - mistakes * 5);
+                score = Math.max(score, 5);
+                message = `<strong>✓ 不錯！</strong><br>找出了 ${correctCount}/${totalCorrect} 個問題。${mistakes > 0 ? `有 ${mistakes} 個誤判。` : ''}<br>獲得 +${score} 分`;
+                feedback.classList.add('partial');
+            } else {
+                score = 0;
+                message = `<strong>再想想！</strong><br>答案已標示出來，看看你漏掉了什麼～`;
+                feedback.classList.add('partial');
+            }
+            
+            totalScore += score;
+            updateScore();
+            
+            feedback.innerHTML = message;
+            feedback.classList.add('show');
+            
+            if (gameId === 1) game1Answered = true;
+            if (gameId === 2) game2Answered = true;
+            
+            checkCompletion();
+        }
+        
+        function selectChoice(element, isCorrect, gameId, questionIndex) {
+            if (game3Answered[questionIndex]) return;
+            
+            const card = element.closest('.scenario-card');
+            const allChoices = card.querySelectorAll('.choice-btn');
+            const explanation = document.getElementById(`explanation-${questionIndex}`);
+            
+            allChoices.forEach(btn => {
+                btn.style.pointerEvents = 'none';
+            });
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                totalScore += 25;
+                explanation.classList.add('show');
+            } else {
+                element.classList.add('incorrect');
+                allChoices.forEach(btn => {
+                    if (btn !== element) {
+                        setTimeout(() => {
+                            const btnText = btn.onclick.toString();
+                            if (btnText.includes('true')) {
+                                btn.classList.add('correct');
+                            }
+                        }, 500);
+                    }
+                });
+                setTimeout(() => {
+                    explanation.classList.add('show');
+                }, 800);
+            }
+            
+            game3Answered[questionIndex] = true;
+            updateScore();
+            checkCompletion();
+        }
+        
+        function updateScore() {
+            document.getElementById('totalScore').textContent = totalScore;
+        }
+        
+        function checkCompletion() {
+            if (game1Answered && game2Answered && game3Answered[0] && game3Answered[1]) {
+                setTimeout(() => {
+                    document.getElementById('completion').classList.add('show');
+                }, 1000);
+            }
+        }
+        
+        function shareResult() {
+            let rank = '初學者';
+            if (totalScore >= 80) rank = '無障礙專家';
+            else if (totalScore >= 60) rank = '觀察達人';
+            else if (totalScore >= 40) rank = '進步中';
+            
+            const message = `我完成了CRPD「無障礙偵探」挑戰！🔍\n\n最終得分：${totalScore}/100\n等級：${rank}\n\n學會了識別生活中的障礙：\n🚇 交通環境障礙\n🍽️ 公共空間障礙\n🎮 共融設計概念\n💻 資訊無障礙重要性\n\n一起打造無障礙社會！\n\n#CRPD #無障礙 #共融設計`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'CRPD無障礙挑戰',
+                    text: message
+                });
+            } else {
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('成果已複製到剪貼簿！');
+                });
+            }
+        }
+        
+        function pledgeAction() {
+            const message = `我的無障礙行動承諾 🌐\n\n從今天起，我會：\n\n✅ 留意身邊的障礙環境\n✅ 不佔用無障礙設施\n✅ 支持共融式設計\n✅ 推廣無障礙觀念\n✅ 發現問題時勇敢反映\n\n小小的改變，能帶來大大的不同！\n\n你也一起加入嗎？\n\n#CRPD完成 #無障礙行動 #友善社會`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '我的無障礙承諾',
+                    text: message
+                });
+            } else {
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('承諾已複製！去分享給更多人吧～');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
